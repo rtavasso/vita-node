@@ -148,7 +148,9 @@ jobs:
             See [commit history](https://github.com/${{ github.repository }}/compare/v1.0.0...${{ github.ref_name }}) for changes.
           files: |
             vita-node-${{ github.ref_name }}-prebuilds.tar.gz
-            vita-node-${{ github.ref_name }}-*.tar.gz
+            vita-node-${{ github.ref_name }}-darwin-arm64.tar.gz
+            vita-node-${{ github.ref_name }}-linux-x64.tar.gz
+            vita-node-${{ github.ref_name }}-win32-x64.tar.gz
           fail_on_unmatched_files: false
 
   publish-npm:
