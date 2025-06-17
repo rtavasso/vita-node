@@ -1,0 +1,83 @@
+# .github/workflows/ci.yml
+
+name: CI & Prebuilds
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-14
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      # ====================================================================
+      # ================== DIAGNOSTIC & RENAME STEPS =======================
+      # ====================================================================
+      - name: 1. List files AFTER checkout (macOS)
+        if: runner.os == 'macOS'
+        run: ls -l headless/JuceLibraryCode/
+
+      - name: Rename C++ to Objective-C++ sources for macOS
+        if: runner.os == 'macOS'
+        run: |
+          for f in headless/JuceLibraryCode/*.cpp; do
+            mv -- "$f" "${f%.cpp}.mm"
+          done
+        shell: bash
+
+      - name: 2. List files AFTER rename (macOS)
+        if: runner.os == 'macOS'
+        run: ls -l headless/JuceLibraryCode/
+      # ====================================================================
+      # =================== END OF DIAGNOSTIC STEPS ========================
+      # ====================================================================
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsndfile1-dev
+
+      - name: Clean build
+        shell: bash
+        run: |
+          rm -rf build node_modules || true
+          npm cache clean --force || true
+
+      - name: Install dependencies
+        run: npm install
+        env:
+          npm_config_msvs_version: '2022'
+
+      - name: Create prebuilds
+        run: npm run prebuild
+
+      - name: Run tests
+        run: npm test
+
+      - name: Upload prebuilds artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuilds-${{ matrix.os }}
+          path: prebuilds/

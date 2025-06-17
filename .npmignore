@@ -1,0 +1,30 @@
+# Don't publish build artifacts
+build/
+.github/
+*.log
+.DS_Store
+
+# Don't publish source files that aren't needed for building
+test/
+docs/
+examples/
+.vscode/
+.idea/
+
+# Don't publish CI artifacts
+npm-*.txt
+*.tgz
+
+# Keep prebuildify artifacts
+!prebuilds/
+
+# Don't publish local env files
+.env
+.env.*
+
+# Development files
+.editorconfig
+.eslintrc*
+.prettierrc*
+*.md
+!README.md
