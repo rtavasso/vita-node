@@ -44,26 +44,26 @@ console.log("Potential destinations:", vita.getModulationDestinations());
 console.assert(synth.connectModulation("lfo_1", "filter_1_cutoff"));
 
 const controls = synth.getControls();
-controls.get("modulation_1_amount").set(1.0);
-controls.get("filter_1_on").set(1.0);
-const val = controls.get("filter_1_on").value();
-controls.get("lfo_1_tempo").set(vita.constants.SyncedFrequency.k1_16);
+controls.modulation_1_amount.set(1.0);
+controls.filter_1_on.set(1.0);
+const val = controls.filter_1_on.value();
+controls.lfo_1_tempo.set(vita.constants.SyncedFrequency.k1_16);
 
 // Use normalized parameter control (0-1 range, VST-style)
-controls.get("filter_1_cutoff").setNormalized(0.5); // Set knob to 50%
-console.log(controls.get("filter_1_cutoff").getNormalized()); // Get normalized value
+controls.filter_1_cutoff.setNormalized(0.5); // Set knob to 50%
+console.log(controls.filter_1_cutoff.getNormalized()); // Get normalized value
 
 // Get parameter details and display text
 const info = synth.getControlDetails("delay_style");
 console.log(`Options: ${info.options}`); // ["Mono", "Stereo", "Ping Pong", "Mid Ping Pong"]
 console.log(`Current: ${synth.getControlText('delay_style')}`); // e.g., "Stereo"
 
-// Render audio to an array of Float32Arrays: [leftChannel, rightChannel]
-const audio = synth.render(pitch, velocity, noteDur, renderDur);
+// Render audio directly to a WAV file
+// renderFile(filename, pitch, velocity, noteDuration, renderDuration)
+synth.renderFile("generated_preset.wav", pitch, velocity, noteDur, renderDur);
 
-// Encode and write the WAV file
-const encodedWav = wav.encode(audio, { sampleRate: SAMPLE_RATE, float: true, bitDepth: 32 });
-fs.writeFileSync("generated_preset.wav", encodedWav);
+// Or use render() which returns a Buffer with raw audio data
+// const audioBuffer = synth.render(pitch, velocity, noteDur, renderDur);
 
 // Dump current state to JSON text
 const presetPath = "generated_preset.vital";
@@ -80,6 +80,50 @@ console.assert(synth.loadPreset(presetPath));
 // Load the initial preset, which also clears modulations
 synth.loadInitPreset();
 // Or just clear modulations.
+synth.clearModulations();
+```
+
+## API Notes
+
+### Controls Object
+The `getControls()` method returns an object with all synthesizer parameters as properties. Each control is a ControlValue object with these methods:
+- `set(value)` - Set the control value
+- `value()` - Get the current value
+- `setNormalized(value)` - Set using normalized 0-1 range
+- `getNormalized()` - Get normalized value
+- `getText()` - Get display text for the current value
+
+Example:
+```javascript
+const controls = synth.getControls();
+controls.filter_1_cutoff.set(0.5);  // Direct property access
+console.log(controls.filter_1_cutoff.value());
+```
+
+### Audio Rendering
+- `renderFile(filename, pitch, velocity, noteDuration, renderDuration)` - Render directly to WAV file
+- `render(pitch, velocity, noteDuration, renderDuration)` - Returns a Buffer with raw audio data
+
+### Preset Management
+Working with Vital presets (.vital files):
+
+```javascript
+// Load a preset from file
+if (synth.loadPreset('/path/to/preset.vital')) {
+    console.log('Preset loaded successfully');
+}
+
+// Save current state as preset
+const presetJson = synth.toJson();
+fs.writeFileSync('my_preset.vital', presetJson);
+
+// Load from JSON string
+synth.loadJson(presetJson);
+
+// Reset to initial preset
+synth.loadInitPreset();
+
+// Clear all modulations
 synth.clearModulations();
 ```
 
