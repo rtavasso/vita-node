@@ -168,20 +168,20 @@ jobs:
 
       - name: Download prebuilds from release
         run: |
-          # Download the combined prebuilds tarball
-          curl -L \
-            -H "Accept: application/octet-stream" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -o prebuilds.tar.gz \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}/assets?name=vita-node-${{ github.ref_name }}-prebuilds.tar.gz"
+          # Download the combined prebuilds tarball using GitHub CLI
+          gh release download ${{ github.ref_name }} \
+            --pattern "vita-node-${{ github.ref_name }}-prebuilds.tar.gz" \
+            --repo ${{ github.repository }}
           
           # Extract prebuilds
           mkdir -p prebuilds
-          tar -xzf prebuilds.tar.gz -C prebuilds
+          tar -xzf vita-node-${{ github.ref_name }}-prebuilds.tar.gz -C prebuilds
           
           # Verify extraction
           echo "=== Prebuilds included in npm package ==="
           find prebuilds -name "*.node" -type f
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare package
         run: |
