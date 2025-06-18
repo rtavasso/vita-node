@@ -42,3 +42,4 @@ dist
 headless/builds/VisualStudio2022/x64
 .claude
 node_modules/
+test-install/

@@ -104,6 +104,35 @@ console.log(controls.filter_1_cutoff.value());
 - `renderFile(filename, pitch, velocity, noteDuration, renderDuration)` - Render directly to WAV file
 - `render(pitch, velocity, noteDuration, renderDuration)` - Returns a Buffer with raw audio data
 
+### Batch Rendering (High Performance)
+For rendering thousands of presets efficiently using multiple CPU cores:
+
+```javascript
+const { BatchRenderer } = require('vita-node');
+
+// Create batch renderer with 8 workers
+const renderer = new BatchRenderer({ workers: 8 });
+
+// Example 1: Render to output directory (preserves filenames)
+const presets = ['preset1.vital', 'preset2.vital', ...];
+await renderer.renderBatch(presets, './output');
+// Creates: ./output/preset1.wav, ./output/preset2.wav, ...
+
+// Example 2: Specify individual output paths
+const outputPaths = ['bass.wav', 'lead.wav', ...];
+await renderer.renderBatch(presets, outputPaths);
+
+// Example 3: With progress tracking
+await renderer.renderBatchWithProgress(
+    presets,
+    './output',
+    { note: 48, velocity: 0.9 },
+    (progress) => {
+        console.log(`${progress.percentage.toFixed(1)}% complete`);
+    }
+);
+```
+
 ### Preset Management
 Working with Vital presets (.vital files):
 

@@ -3,7 +3,10 @@
 // 1. Load the native addon using node-gyp-build (works with both regular builds and prebuildify)
 const vita = require('node-gyp-build')(__dirname);
 
-// 2. Build the object you want to export
+// 2. Load batch renderer
+const VitaBatchRenderer = require('./batch-renderer');
+
+// 3. Build the object you want to export
 const exportsObject = {
   // Use the correct variable name: 'vita'
   Synth: vita.Synth,
@@ -15,11 +18,14 @@ const exportsObject = {
   
   // JavaScript-style function names (camelCase)
   getModulationSources: vita.getModulationSources,
-  getModulationDestinations: vita.getModulationDestinations
+  getModulationDestinations: vita.getModulationDestinations,
+  
+  // Batch rendering
+  BatchRenderer: VitaBatchRenderer
 };
 
-// 3. For compatibility with Python's import style, add a self-reference
+// 4. For compatibility with Python's import style, add a self-reference
 exportsObject.vita = exportsObject;
 
-// 4. Export the final object
+// 5. Export the final object
 module.exports = exportsObject;
